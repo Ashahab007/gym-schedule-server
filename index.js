@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -9,8 +9,8 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// user: gymscheduledb
-// password: CzGj0NxgajzbWe50
+// DB_USER=gymscheduledb
+// DB_PASS=CzGj0NxgajzbWe50
 
 console.log(process.env.DB_USER);
 console.log(process.env.DB_PASS);
@@ -36,6 +36,46 @@ async function run() {
       const result = await gymCollections.insertOne(req.body);
       res.send({ message: "Data inserted", data: result });
     });
+
+    app.get("/schedule", async (req, res) => {
+      const result = await gymCollections.find().toArray();
+      res.send(result);
+    });
+
+    app.delete("/schedule/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await gymCollections.deleteOne(query);
+      res.send(result);
+    });
+
+    // 1.0 My requirement is update a single data that's why first make the get api with findOne method to get the specific id (same as delete)
+
+    app.get("/schedule/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await gymCollections.findOne(query);
+      res.send(result);
+    });
+
+    // 1.2 simultaneously created the updata api put
+    app.put("/schedule/:id", async (req, res) => {
+      const id = req.body.id;
+      // directly destructured it as we will use in $set
+      const { title, day, hour, date } = req.body;
+      const query = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          title,
+          day,
+          hour,
+          date,
+        },
+      };
+      const result = await gymCollections.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
@@ -47,7 +87,6 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  //   console.log("Gym server is running successfully");
   res.send("Gym server is running successfully");
 });
 
