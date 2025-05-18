@@ -49,7 +49,7 @@ async function run() {
       res.send(result);
     });
 
-    // 1.0 My requirement is update a single data that's why first make the get api with findOne method to get the specific id (same as delete)
+    // 1.0 My requirement is update a single data that's why first make the get api with findOne method to get the specific id (same as delete).Note: if we only use put method without get method and update the any data, only new data is updated and other data shows null in db. But we want to update it with new data and send the existing data (not updated data) to the db. so first we use get method with findOne to get the id of that data.
 
     app.get("/schedule/:id", async (req, res) => {
       const id = req.params.id;
@@ -58,7 +58,7 @@ async function run() {
       res.send(result);
     });
 
-    // 1.2 simultaneously created the updata api put
+    // 1.2 then created the update api put
     app.put("/schedule/:id", async (req, res) => {
       const id = req.body.id;
       // directly destructured it as we will use in $set
