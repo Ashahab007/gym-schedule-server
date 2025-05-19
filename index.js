@@ -60,7 +60,7 @@ async function run() {
 
     // 1.2 then created the update api put
     app.put("/schedule/:id", async (req, res) => {
-      const id = req.body.id;
+      const id = req.params.id;
       // directly destructured it as we will use in $set
       const { title, day, hour, date } = req.body;
       const query = { _id: new ObjectId(id) };
@@ -73,6 +73,25 @@ async function run() {
         },
       };
       const result = await gymCollections.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+    // 2.1 create a patch method applying upsert
+    app.patch("/schedule/:id", async (req, res) => {
+      const id = req.params.id;
+      // directly destructured it as we will use in $set
+
+      const query = { _id: new ObjectId(id) };
+      // 2.2 update the doc but isCompleted is not previously created in db that's why to create in db with $set and then use upsert
+      const updateDoc = {
+        $set: {
+          isCompleted: true,
+        },
+      };
+      const result = await gymCollections.updateOne(query, updateDoc, {
+        // 2.3 apply with upsert. upsert means if isCompleted is present in db it will update or if not present it will insert in db.
+        upsert: true,
+      });
       res.send(result);
     });
 
