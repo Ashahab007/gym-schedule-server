@@ -38,7 +38,19 @@ async function run() {
     });
 
     app.get("/schedule", async (req, res) => {
-      const result = await gymCollections.find().toArray();
+      // 3.0 my requirement is search gym schedule
+      // 3.1 get the searchParams via a query because we are using query string
+      const { searchParams } = req.query;
+
+      // 3.1.1 took an empty query for default fetch using let
+      let query = {};
+
+      // 3.1.2 took conditional query for searchParams if searchParams contains value. As we are going to search by title so we use title in query
+      if (searchParams) {
+        query = { title: { $regex: searchParams, $options: "i" } };
+      }
+      // 3.1.3 pass the query
+      const result = await gymCollections.find(query).toArray();
       res.send(result);
     });
 
